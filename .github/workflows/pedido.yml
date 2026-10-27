@@ -1,0 +1,42 @@
+name: Pedido de atualização
+
+# Este workflow NÃO busca preço nenhum. Ele só deixa um bilhete na branch "pedido".
+# O agente que roda no seu PC (agente_local.py) vigia essa branch, faz a busca e publica a página.
+
+on:
+  workflow_dispatch:
+    inputs:
+      alvo:
+        description: "todos = busca completa no PC; ou a chave de uma peça (16 letras/números) para atualizar só ela"
+        type: string
+        default: todos
+
+concurrency:
+  group: pedido
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  pedido:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Registrar o pedido
+        env:
+          ALVO: ${{ inputs.alvo }}            # nunca interpolado no script: só lido do ambiente
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! [[ "$ALVO" == "todos" || "$ALVO" =~ ^[0-9a-f]{16}$ ]]; then
+            echo "Alvo inválido: use 'todos' ou a chave de 16 letras/números de uma peça."
+            exit 1
+          fi
+          mkdir bilhete && cd bilhete
+          git init -q -b pedido
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf '{"id":"%s","alvo":"%s","pedido_em":"%s"}\n' "$GITHUB_RUN_ID" "$ALVO" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > pedido.json
+          git add pedido.json
+          git commit -q -m "Pedido $GITHUB_RUN_ID ($ALVO)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" pedido

@@ -3,10 +3,10 @@
 *.env
 prices.db
 prices.db-*
-prices_local.db
-prices_local.db-*
-terabyte.log
 last_run.json
+.agente_estado.json
+agente.log
+agente.out
 watch.log
 debug/
 site/

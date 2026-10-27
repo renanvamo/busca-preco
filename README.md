@@ -1,62 +1,53 @@
 # busca-preco
 
-Monitor de preços de peças de PC (KaBuM e Terabyte) que roda sozinho no GitHub e publica uma página para comparar as peças.
+Monitor de preços de peças de PC (KaBuM e Terabyte). **Quem busca é o seu PC**; o GitHub só hospeda a página, que você abre de qualquer computador.
 
-- **Coleta (modo híbrido):** um workflow do GitHub Actions consulta a KaBuM a cada 2 horas, guarda o histórico e te avisa no celular (ntfy) quando uma peça cai de preço ou bate a meta. A **Terabyte bloqueia o GitHub**, então ela é lida pelo seu PC (`rodar_terabyte.py`) e os dois lados são juntados na página.
-- **Página:** o GitHub Pages publica a lista de peças com preço atual, mínimo/máximo do período, selo de queda/alta, soma das peças escolhidas e FPS estimado. Dá para abrir de qualquer computador.
-- **Botão "Atualizar agora":** na página, pede ao GitHub para rodar a busca na hora (sem esperar o horário). Veja "Botão da página" abaixo.
-- **PC ligado só para a Terabyte:** o resto roda sozinho no GitHub.
+- **Coleta:** o agente (`agente_local.py`) roda no seu PC, lê KaBuM e Terabyte a cada 2 horas com o seu IP de casa (a Terabyte bloqueia os servidores do GitHub), guarda o histórico e te avisa no celular (ntfy) quando uma peça cai de preço ou bate a meta.
+- **Página:** o agente monta a página e publica no GitHub Pages: lista de peças com preço atual, mínimo/máximo do período, selo de queda/alta, soma das peças escolhidas e FPS estimado.
+- **Botões da página:** "Atualizar tudo (PC)" e "↻ atualizar" em cada peça deixam um pedido no GitHub; o agente do seu PC atende e publica o preço novo.
+- **PC desligado:** a página continua no ar com os últimos preços; só não atualiza até o PC voltar.
 
 ## Como funciona
 
 ```
-Actions (a cada 2h, ou pelo botão da página)
-  1. baixa o histórico (branch "data") e as leituras do PC de casa (branch "data-local")
-  2. roda price_watch.py --skip-stores terabyte: lê as lojas, grava no SQLite, manda aviso (ntfy)
-  3. merge_db.py: junta as leituras do PC de casa no banco
-  4. roda build_site.py: gera site/index.html + site/data.json
-  5. guarda o histórico de volta na branch "data" (sempre 1 commit só)
-  6. publica site/ no GitHub Pages
+Seu PC (agente_local.py, sempre rodando)
+  a cada 2h, ou quando a página pede:
+  1. price_watch.py run: lê as lojas, grava em prices.db, manda aviso (ntfy)
+  2. build_site.py: gera site/index.html + site/data.json
+  3. git push -f para a branch "gh-pages"  -> GitHub Pages atualiza a página (~1 min)
+  4. git push -f para a branch "data"      -> backup do prices.db
+  a cada 30s: olha a branch "pedido" (git ls-remote)
 
-PC de casa (Agendador de Tarefas do Windows, a cada 2h)
-  rodar_terabyte.py
-  1. price_watch.py --only-stores terabyte: lê a Terabyte, grava em prices_local.db, avisa no ntfy
-  2. envia prices_local.db para a branch "data-local"
-  3. pede ao GitHub para refazer a página (precisa do GitHub CLI "gh" logado; senão a próxima execução do GitHub junta)
+Página (GitHub Pages), ao clicar em atualizar
+  -> chama o workflow pedido.yml, que só grava um bilhete na branch "pedido"
+  -> o agente vê o bilhete, busca, publica; a página percebe que data.json mudou e recarrega
 ```
+
+O GitHub **não faz mais buscas** (o workflow agendado `monitor.yml` foi aposentado). O `pedido.yml` não lê preço nenhum: só deixa o bilhete.
 
 ## Configuração (uma vez só)
 
-1. **Segredo do ntfy.** No repositório: *Settings → Secrets and variables → Actions → New repository secret*. Nome `NTFY_TOPIC`, valor um nome **longo e aleatório** (ex.: gere com um gerenciador de senhas). Quem souber o nome do tópico lê seus avisos, por isso ele fica só no Secret e nunca no código. No app ntfy do celular, assine esse mesmo tópico.
-2. **Pages.** *Settings → Pages → Build and deployment → Source: GitHub Actions*.
-3. **Primeira execução.** Aba *Actions → Monitor de preços → Run workflow*. Depois disso ele roda sozinho a cada 2 horas. A página fica em `https://<seu-usuario>.github.io/busca-preco/`.
+**No GitHub (no navegador)**
+1. *Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch `gh-pages`, pasta `/ (root)`.* (A branch aparece depois da primeira publicação do agente.)
+2. Apague o workflow antigo: `git rm .github/workflows/monitor.yml`. Mantenha o `pedido.yml`.
+3. *Settings → Secrets* não é mais necessário: o `NTFY_TOPIC` fica só no PC.
+4. Token para o botão da página (uma vez por navegador): *Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token*, *Repository access:* só o `busca-preco`, *Repository permissions → Actions: Read and write* (nenhuma outra). A página pede o token no primeiro clique e guarda só no navegador (`localStorage`); o botão 🔑 troca ou esquece.
 
-## Modo híbrido: Terabyte no seu PC
-
-O GitHub lê a KaBuM, mas a Terabyte devolve 403 para IPs de datacenter. O mesmo código lê a Terabyte normalmente de um IP residencial, então ela roda no seu PC.
-
-1. No PC, na pasta do projeto: `pip install -r requirements.txt` e um arquivo `.env` com `NTFY_TOPIC=seu-topico-secreto` (os avisos de queda da Terabyte saem daqui; o `.env` nunca sobe para o GitHub).
-2. Teste: `python rodar_terabyte.py --sem-publicar` (lê a Terabyte e grava em `prices_local.db`, sem enviar nada).
-3. Para o PC enviar o resultado e pedir a atualização da página, o `git push` já precisa funcionar nele. Opcional: instalar o [GitHub CLI](https://cli.github.com) e rodar `gh auth login` (sem ele, a página só atualiza na próxima execução do GitHub, a cada 2h).
-4. Agendar a cada 2h (no minuto 47, para não bater com o GitHub, que roda no 17):
+**No PC (Windows)**
+1. `pip install -r requirements.txt`
+2. Arquivo `.env` na pasta do projeto com `NTFY_TOPIC=seu-topico-secreto` (nunca sobe para o GitHub).
+3. O `git push` precisa funcionar sem pedir senha (login do Git Credential Manager já resolve).
+4. Teste uma busca sem publicar: `python agente_local.py --uma-vez --sem-publicar`
+5. Primeira publicação: `python agente_local.py --uma-vez` (cria a branch `gh-pages`; depois faça o passo 1 de cima).
+6. Deixe rodando sozinho ao ligar o PC (abre uma janela de terminal minimizada; não feche):
 
 ```
-schtasks /Create /SC HOURLY /MO 2 /ST 00:47 /TN "busca-preco Terabyte" /F /TR "cmd /c cd /d C:\Users\Suporte\Desktop\Particular\projetos\busca-preco && python rodar_terabyte.py >> terabyte.log 2>&1"
+schtasks /Create /SC ONLOGON /TN "busca-preco agente" /F /TR "cmd /c cd /d C:\Users\Suporte\Desktop\Particular\projetos\busca-preco && python agente_local.py >> agente.out 2>&1"
 ```
 
-O PC precisa estar ligado e com a sessão aberta na hora; se ficar desligado, a Terabyte só fica sem leitura nova (o resto continua). Para ler a Terabyte na hora, rode `python rodar_terabyte.py`.
+Se o `schtasks` responder "Acesso negado", abra o terminal como administrador, ou use o jeito sem admin: `Win+R` → `shell:startup` → crie um atalho para `python agente_local.py` com a pasta do projeto como "Iniciar em".
 
-Os dois lados usam bancos separados (`prices.db` no GitHub, `prices_local.db` no PC) e `merge_db.py` junta antes de gerar a página, sem duplicar leituras. Se a Terabyte parar de ser lida por 3 execuções seguidas, o aviso de "precisa de atenção" vem do PC.
-
-## Botão da página ("Atualizar agora")
-
-A página publicada não tem servidor, então o botão chama a API do GitHub direto do seu navegador para rodar o workflow. Na primeira vez ele pede um token:
-
-1. GitHub → *Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token*.
-2. *Repository access:* só o `busca-preco`. *Repository permissions → Actions:* **Read and write**. Mais nada.
-3. Cole na caixa que aparece ao clicar no botão. O token fica **só no localStorage deste navegador** (não vai para o repositório nem para a página publicada). O botão 🔑 token troca ou esquece.
-
-O botão roda o workflow no modo `completo` (KaBuM e demais lojas + refaz a página) e acompanha até terminar, sem mexer na Terabyte, que continua com o PC. Também dá para rodar pela aba *Actions → Run workflow* (escolha `completo` ou `so_site`). Na página local (`python webapp.py`) o botão continua lendo todas as lojas aqui mesmo.
+Para ver se está vivo: abra `agente.log` na pasta do projeto (cada busca e cada pedido ficam registrados), ou veja o horário em "Preços de…" no topo da página. Para parar: Gerenciador de Tarefas → finalizar o `python.exe`, ou `schtasks /Delete /TN "busca-preco agente" /F`. Dá para rodar também de uma janela: `python agente_local.py`.
 
 ## O que é público e o que não é
 
@@ -64,44 +55,44 @@ Este repositório é público. Por isso:
 
 | Fica público | Não fica no repositório |
 |---|---|
-| código, `watchlist.json` (o que você monitora), `benchmarks.json` | o tópico do ntfy (só no Secret `NTFY_TOPIC`) |
-| `data.json` da página: preços, nomes e links das lojas | qualquer arquivo `.env` |
-| branches `data` e `data-local`: `prices.db` e `prices_local.db` com o histórico de preços | páginas de loja salvas para diagnóstico (`*.html`, `debug/`) |
+| código, `watchlist.json` (o que você monitora), `benchmarks.json` | o tópico do ntfy (só no `.env` do PC) |
+| `data.json` da página: preços, nomes e links das lojas | qualquer arquivo `.env`, o token do botão |
+| branch `data`: o `prices.db` com o histórico de preços | páginas de loja salvas para diagnóstico (`*.html`, `debug/`) |
 
-O `.gitignore` já bloqueia `.env`, `prices.db`, logs e arquivos `.html` (exceto `index.html`). Antes de qualquer commit, confira com `git status`.
+O `.gitignore` bloqueia `.env`, `prices.db`, logs e arquivos `.html` (exceto `index.html`). Antes de qualquer commit, confira com `git status`. O agente só envia o que está em `site/` (a página) e o `prices.db`.
 
 ## O que editar
 
 - **`watchlist.json`:** produtos (link de página de produto + `target`, a meta de preço) e buscas (`query`, `include`/`exclude` em regex, `max_price`). Vale para KaBuM (busca e link) e Terabyte (só link de produto). Pichau e Mercado Livre bloqueiam o script e ficam em `disabled_stores`.
 - **`benchmarks.json`:** notas de desempenho de CPUs e GPUs e os custos estimados das outras peças (`custos_fixos`).
-- **`defaults.heartbeat`** (em `watchlist.json`): `true` manda um aviso discreto a cada execução ("Monitor rodou às HH:MM"), para você saber que está funcionando. Use `false` para desligar.
-- **Frequência:** a linha `cron` em `.github/workflows/monitor.yml` (horário UTC).
+- **`defaults.heartbeat`** (em `watchlist.json`): `true` manda um aviso discreto a cada busca agendada ("Monitor rodou às HH:MM"), para você saber que está funcionando. Os pedidos feitos pela página não mandam esse aviso.
+- **Frequência:** `python agente_local.py --intervalo 60` (minutos; padrão 120). Para mudar, ajuste o comando do `schtasks`.
 
 ## Limites que você precisa saber
 
-- **As lojas podem bloquear o GitHub.** As execuções saem de IPs de datacenter, que lojas com proteção anti-bot costumam barrar com mais facilidade do que um computador de casa (é o caso da Terabyte, por isso o modo híbrido acima). O monitor **não tenta driblar** bloqueios: se uma loja devolver desafio, captcha ou login, ele pula a loja naquela execução e, depois de 3 execuções seguidas sem ler nada, manda um aviso.
-- **Agendamento do GitHub não é exato.** Execuções podem atrasar alguns minutos ou, raramente, ser puladas. Em repositório público, o GitHub desativa workflows agendados depois de 60 dias sem atividade no repositório; se parar, reative em *Actions*.
+- **O PC precisa estar ligado e com a sessão aberta** para buscar e atender os botões. Se ele dormir, o agente retoma sozinho ao acordar (faz uma busca na hora se já passou o intervalo).
+- **Pedido da página não é instantâneo:** o GitHub leva uns segundos para registrar, o agente olha a cada 30 s, a busca completa leva alguns minutos e o GitHub Pages leva cerca de 1 minuto para publicar. Uma peça sozinha costuma levar 1 a 3 minutos no total.
+- **Sem execução simultânea:** o agente faz uma coisa por vez; pedidos feitos durante uma busca esperam a vez. Só um agente pode rodar por PC.
+- **As lojas podem bloquear.** O monitor **não tenta driblar** bloqueios: se uma loja devolver desafio, captcha ou login, ele pula a loja naquela busca e, depois de 3 buscas seguidas sem ler nada, manda um aviso.
 - **Preço da loja ≠ preço no carrinho.** O script lê o preço publicado na página (geralmente à vista/PIX). Confirme sempre na loja antes de comprar.
+- **Token do botão:** quem tiver o token consegue disparar pedidos neste repositório (nada além disso). Use o token só neste navegador e revogue em *Settings → Developer settings* se perder o controle dele.
 
-## Rodar no seu computador (opcional)
+## Uso manual no PC
 
 ```bash
-pip install -r requirements.txt
-echo NTFY_TOPIC=seu-topico-secreto > .env      # opcional; o .env nunca sobe para o GitHub
-python price_watch.py run                      # lê as lojas e grava em prices.db
-python webapp.py                               # página local em http://127.0.0.1:8765
-python price_watch.py test-url "https://www.kabum.com.br/produto/..."   # testa uma URL
-python -m unittest test_price_watch test_setups test_hibrido           # testes
+python agente_local.py --uma-vez --sem-publicar   # busca e grava em prices.db, sem enviar nada
+python price_watch.py run                         # só a busca (sem montar nem publicar a página)
+python webapp.py                                  # página local em http://127.0.0.1:8765, com botões próprios
+python price_watch.py test-url "https://www.terabyteshop.com.br/produto/..."   # testa uma URL
+python price_watch.py run --only-stores terabyte  # só uma loja (ou --skip-stores kabum)
+python -m unittest test_price_watch test_setups test_hibrido test_agente       # testes
 ```
-
-A página local também tem os botões "Atualizar preços agora" e "↻ atualizar" por peça, que dependem de um servidor e por isso não existem na versão publicada.
 
 ## Arquivos
 
-- `price_watch.py`: o monitor (lojas, histórico, avisos). `--only-stores` / `--skip-stores` dividem as lojas entre o GitHub e o PC.
-- `rodar_terabyte.py`: roda no PC só as lojas que bloqueiam o GitHub e entrega o resultado.
-- `merge_db.py`: junta o banco do PC no banco do GitHub antes de gerar a página.
+- `agente_local.py`: o agente do PC (busca agendada, pedidos da página, publicação).
+- `price_watch.py`: o monitor (lojas, histórico, avisos).
 - `build_setups.py`: histórico (mín/máx/variação), cálculo de FPS e soma das peças.
 - `build_site.py`: gera a página publicada.
 - `webapp.py` e `index.html`: a página (local e publicada).
-- `.github/workflows/monitor.yml`: o agendamento.
+- `.github/workflows/pedido.yml`: o bilhete que liga o botão da página ao seu PC.
