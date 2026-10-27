@@ -3,6 +3,9 @@
 *.env
 prices.db
 prices.db-*
+prices_local.db
+prices_local.db-*
+terabyte.log
 last_run.json
 watch.log
 debug/

@@ -747,6 +747,21 @@ def build_jobs(cfg: dict) -> list[Job]:
     return ordered
 
 
+def parse_stores(text: str | None) -> set[str]:
+    """'terabyte, KaBuM' -> {'terabyte', 'kabum'} (minúsculas, sem vazios)."""
+    return {x.strip().lower() for x in (text or "").split(",") if x.strip()}
+
+
+def filter_jobs(jobs: list[Job], only: set[str] | None = None, skip: set[str] | None = None) -> list[Job]:
+    """Divide o trabalho entre máquinas: `only` mantém só essas lojas, `skip` tira essas lojas.
+    Ex.: o GitHub roda com skip={'terabyte'} e o PC de casa roda com only={'terabyte'}."""
+    if only:
+        jobs = [j for j in jobs if j.store.lower() in only]
+    if skip:
+        jobs = [j for j in jobs if j.store.lower() not in skip]
+    return jobs
+
+
 def match_filters(name: str, job_cfg: dict) -> bool:
     inc, exc = job_cfg.get("include"), job_cfg.get("exclude")
     flags = re.I | re.S
@@ -772,7 +787,8 @@ def save_debug(store: str, html: str) -> Path | None:
 
 
 def run(cfg: dict, db: sqlite3.Connection, dry: bool, delay: tuple[float, float], verbose: bool,
-        out_path: Path | None = None) -> int:
+        out_path: Path | None = None, only_stores: set[str] | None = None,
+        skip_stores: set[str] | None = None, heartbeat: bool | None = None) -> int:
     defaults = cfg.get("defaults", {})
     strict_stock = bool(defaults.get("strict_stock", False))
     drop_default = float(defaults.get("drop_pct", 8))
@@ -788,7 +804,9 @@ def run(cfg: dict, db: sqlite3.Connection, dry: bool, delay: tuple[float, float]
     observations: list[Obs] = []
     log =(lambda *a: print(*a, file=sys.stderr)) if verbose else (lambda *a: None)
 
-    jobs = build_jobs(cfg)
+    jobs = filter_jobs(build_jobs(cfg), only_stores, skip_stores)
+    if (only_stores or skip_stores) and not jobs:
+        print("Nenhum item para as lojas escolhidas (confira --only-stores / --skip-stores).", file=sys.stderr)
     for idx, job in enumerate(jobs):
         if job.store in blocked:
             log(f"[{job.store}] pulado (loja bloqueou nesta execução): {job.label}")
@@ -1064,7 +1082,8 @@ def run(cfg: dict, db: sqlite3.Connection, dry: bool, delay: tuple[float, float]
                 print(f"Falha ao notificar: {e}", file=sys.stderr)
 
     # sinal de vida: um aviso discreto por execução, para você saber que o agendador está rodando
-    if defaults.get("heartbeat", False) and not dry and not shown:
+    use_heartbeat = defaults.get("heartbeat", False) if heartbeat is None else heartbeat
+    if use_heartbeat and not dry and not shown:
         lojas = " | ".join(f"{s}: {v['lidos']}" for s, v in summary.items()) or "nenhum item lido"
         total = sum(v["lidos"] for v in summary.values())
         hora = datetime.now().astimezone().strftime("%H:%M")
@@ -1222,6 +1241,12 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("-v", "--verbose", action="store_true")
     r.add_argument("--out", default=str(HERE / "last_run.json"),
                    help="arquivo JSON com todos os itens lidos e o estoque de cada um")
+    r.add_argument("--only-stores", metavar="LOJAS",
+                   help="só estas lojas, separadas por vírgula (ex.: terabyte)")
+    r.add_argument("--skip-stores", metavar="LOJAS",
+                   help="pula estas lojas, separadas por vírgula (ex.: terabyte)")
+    r.add_argument("--no-heartbeat", action="store_true",
+                   help="não manda o aviso 'Monitor rodou às HH:MM' desta execução")
 
     t = sub.add_parser("test-url", help="mostra o que o script extrai de uma URL")
     t.add_argument("url")
@@ -1268,7 +1293,10 @@ def main(argv: list[str] | None = None) -> int:
     out = getattr(args, "out", None)
     try:
         return run(cfg, db, getattr(args, "dry_run", False), delay, getattr(args, "verbose", False),
-                   Path(out) if out else None)
+                   Path(out) if out else None,
+                   only_stores=parse_stores(getattr(args, "only_stores", None)),
+                   skip_stores=parse_stores(getattr(args, "skip_stores", None)),
+                   heartbeat=False if getattr(args, "no_heartbeat", False) else None)
     except sqlite3.OperationalError as e:
         db.rollback()
         print(f"{LOCKED_MSG if 'locked' in str(e) else 'Erro no banco: ' + str(e)}", file=sys.stderr)

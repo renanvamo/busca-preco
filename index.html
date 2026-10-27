@@ -58,6 +58,9 @@
   #toast{position:fixed;right:20px;top:70px;z-index:9;max-width:380px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:none}
   #toast.bad{border-left-color:var(--bad)}
   #bar .warn{color:var(--warn);font-size:13px;width:100%}
+  #ghbox input{font:inherit;width:min(420px,100%);padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  #ghbox ol{margin:6px 0 10px;padding-left:20px} #ghbox li{margin:2px 0}
+  #ghbox .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 </style>
 </head>
 <body>
@@ -66,11 +69,28 @@
   <button class="primary" id="btnRun">Atualizar preços agora</button>
   <button id="btnLoad">Recarregar lista</button>
   <button id="btnClear">Limpar seleção</button>
+  <button class="mini" id="btnTok" hidden title="Configurar ou trocar o token do GitHub usado pelo botão de atualizar">🔑 token</button>
   <label title="Janela usada para calcular Mín, Máx e as quedas">Histórico:
     <select id="dias"><option value="7">7 dias</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="0">Tudo</option></select></label>
   <span class="small mut" id="stamp"></span>
 </header>
 <main>
+  <div id="ghbox" class="box" hidden>
+    <b>Conectar o botão ao GitHub (uma vez, neste navegador)</b>
+    <p class="small mut">Para iniciar a busca, a página precisa de um token do GitHub que só pode rodar workflows <b>deste</b> repositório:</p>
+    <ol class="small">
+      <li>GitHub → <i>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</i>.</li>
+      <li><i>Repository access:</i> “Only select repositories” → <b id="ghrepo">busca-preco</b>.</li>
+      <li><i>Repository permissions → Actions:</i> “Read and write”. Nenhuma outra permissão.</li>
+      <li>Cole o token abaixo. Ele fica salvo só neste navegador e nunca vai para o repositório.</li>
+    </ol>
+    <div class="row">
+      <input type="password" id="ghtok" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+      <button class="primary" id="ghsave">Salvar e atualizar</button>
+      <button id="ghcancel">Cancelar</button>
+      <button class="mini" id="ghforget">Esquecer token</button>
+    </div>
+  </div>
   <div id="runbox" hidden><div class="small"><b id="runstate"></b></div><pre id="runlog"></pre></div>
   <div id="msg"></div>
   <div id="out"></div>
@@ -301,6 +321,64 @@ async function runNow(){
   }, 2000);
 }
 
+// ---- versão publicada (GitHub Pages): o botão pede ao GitHub para rodar o workflow ----
+const GH = (() => {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/i);
+  const parts = location.pathname.split('/').filter(Boolean);
+  return {owner: m ? m[1] : 'renanvamo', repo: m ? (parts[0] || 'busca-preco') : 'busca-preco', wf: 'monitor.yml', ref: 'main'};
+})();
+const getTok = () => { try{ return localStorage.getItem('gh_token') || ''; }catch(e){ return ''; } };
+const setTok = v => { try{ v ? localStorage.setItem('gh_token', v) : localStorage.removeItem('gh_token'); }catch(e){} };
+const ghFetch = (path, opt = {}) => fetch('https://api.github.com' + path, {...opt, headers: {
+  'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28',
+  'Authorization': 'Bearer ' + getTok(), ...(opt.headers || {})}});
+const showTokBox = on => { $('#ghbox').hidden = !on; if(on){ $('#ghrepo').textContent = GH.repo; $('#ghtok').focus(); } };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function runNowStatic(){
+  if(!getTok()){ showTokBox(true); return; }
+  showTokBox(false); showErr('');
+  $('#btnRun').disabled = true;
+  const t0 = Date.now() - 15000;                       // folga para diferença de relógio
+  const box = (estado, log) => { $('#runbox').hidden = false; $('#runstate').textContent = estado; $('#runlog').textContent = log || ''; };
+  try{
+    box('Pedindo ao GitHub para iniciar a busca…');
+    const r = await ghFetch(`/repos/${GH.owner}/${GH.repo}/actions/workflows/${GH.wf}/dispatches`, {
+      method: 'POST', body: JSON.stringify({ref: GH.ref, inputs: {modo: 'completo'}})});
+    if(r.status !== 204){
+      const j = await r.json().catch(() => ({}));
+      if(r.status === 401){ setTok(''); showTokBox(true); }
+      throw new Error(r.status === 401 ? 'Token recusado pelo GitHub (expirou ou foi digitado errado). Cole um novo.'
+        : r.status === 403 || r.status === 404 ? 'O GitHub negou o pedido (' + r.status + '): confira se o token tem “Actions: Read and write” neste repositório. ' + (j.message || '')
+        : 'O GitHub respondeu ' + r.status + ': ' + (j.message || ''));
+    }
+    const limite = Date.now() + 25 * 60 * 1000;
+    let run = null;
+    while(Date.now() < limite){
+      await sleep(8000);
+      const q = await ghFetch(`/repos/${GH.owner}/${GH.repo}/actions/workflows/${GH.wf}/runs?event=workflow_dispatch&per_page=5`);
+      if(!q.ok) continue;
+      const lista = (await q.json()).workflow_runs || [];
+      run = lista.find(x => new Date(x.created_at).getTime() >= t0) || null;
+      if(!run){ box('Pedido enviado. Esperando o GitHub começar…'); continue; }
+      const link = run.html_url;
+      if(run.status !== 'completed'){
+        box(run.status === 'queued' ? 'Na fila do GitHub…' : 'Buscando preços nas lojas… (costuma levar 2 a 5 minutos)', 'Acompanhar: ' + link);
+        continue;
+      }
+      if(run.conclusion === 'success'){
+        box('Busca concluída. Recarregando a lista…', 'Terabyte: esta busca não lê a Terabyte (ela bloqueia o GitHub). Rode rodar_terabyte.py no seu PC para atualizar ela.\nDetalhes: ' + link);
+        await load(); toast('Preços atualizados.'); $('#runstate').textContent = 'Busca concluída.';
+      } else {
+        box('A busca terminou com erro (' + run.conclusion + ').', 'Veja o log: ' + link);
+      }
+      return;
+    }
+    box('Demorou demais para responder.', 'Veja a aba Actions do repositório.');
+  }catch(e){ showErr(e.message); }
+  finally{ $('#btnRun').disabled = false; }
+}
+
 let toastTimer = null;
 function toast(msg, bad){
   const t = $('#toast'); t.textContent = msg; t.className = bad ? 'bad' : ''; t.style.display = 'block';
@@ -335,8 +413,16 @@ document.addEventListener('click', async ev => {
     }
   }catch(e){ showErr(e.message); if(up) load(); }
 });
-$('#btnRun').onclick = runNow;
-if(MODO_ESTATICO) $('#btnRun').hidden = true;
+if(MODO_ESTATICO){
+  $('#btnRun').textContent = 'Atualizar agora';
+  $('#btnRun').title = 'Pede ao GitHub para ler as lojas e refazer esta página (2 a 5 minutos). A Terabyte é lida pelo seu PC.';
+  $('#btnRun').onclick = runNowStatic;
+  $('#btnTok').hidden = false;
+  $('#btnTok').onclick = () => showTokBox($('#ghbox').hidden);
+  $('#ghsave').onclick = () => { const v = $('#ghtok').value.trim(); if(!v) return; setTok(v); $('#ghtok').value = ''; runNowStatic(); };
+  $('#ghcancel').onclick = () => showTokBox(false);
+  $('#ghforget').onclick = () => { setTok(''); $('#ghtok').value = ''; toast('Token esquecido neste navegador.'); };
+} else $('#btnRun').onclick = runNow;
 $('#btnLoad').onclick = load;
 $('#dias').value = dias;
 $('#dias').onchange = () => { dias = $('#dias').value; try{ localStorage.setItem('dias', dias); }catch(e){} load(); };
