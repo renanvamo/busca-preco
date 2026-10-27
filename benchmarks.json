@@ -1,0 +1,41 @@
+{
+  "_nota": "Notas de desempenho usadas por build_setups.py. Edite à vontade. GPUs: média de FPS em 11 jogos, rasterização, configuração ULTRA, testada com Ryzen 7 9800X3D (Tom's Hardware, 'GPU benchmarks hierarchy 2026', lido em 25/10/2026). CPUs: índice de desempenho em jogos, 9800X3D = 100 (derivado de Tom's Hardware CPU hierarchy e TechSpot 'Ryzen 5800X3D CPU/GPU scaling'; os valores de 7600, 5700X3D e 5600 são ESTIMATIVAS, pois nenhuma fonte testou todos juntos).",
+
+  "config": {
+    "fps_alvo": 60,
+    "cap_fps_base": 190,
+    "expoente": 4,
+    "idade_maxima_horas": 72,
+    "fps_referencia": {"1080p": 203.9, "1440p": 167.3, "4k": 110.8},
+    "referencia_nome": "RTX 5090 + 9800X3D",
+    "custos_fixos": {
+      "_nota": "ESTIMATIVAS (não monitoradas), definidas por você. A página soma placa-mãe, NVMe, fonte e gabinete ao total (o cooler só entra no cálculo antigo do terminal). Troque pelos valores reais quando fechar cada peça.",
+      "AM4": {"placa_mae": 900, "nvme_1tb": 1000, "fonte": 400, "gabinete": 200, "cooler": 150},
+      "AM5": {"placa_mae": 1200, "nvme_1tb": 1000, "fonte": 400, "gabinete": 200, "cooler": 150}
+    }
+  },
+
+  "cpus": {
+    "5600":    {"nome": "Ryzen 5 5600",    "plataforma": "AM4", "regex": "Ryzen\\s*5\\s*5600(?!\\s*(X|G|XT|GT))", "indice": 59,  "cooler_incluso": true,  "fonte": "estimativa: 5800X3D até ~30% mais rápido (TechSpot, RTX 5090, 1080p ultra)"},
+    "5800XT":  {"nome": "Ryzen 7 5800XT",  "plataforma": "AM4", "regex": "5800\\s*XT",  "indice": 64,  "cooler_incluso": false, "fonte": "estimativa: ~4% acima do 5600X e ~20% abaixo do 5800X3D (TechSpot 5600X/5700X/5800XT e 5700X3D)"},
+    "5700X3D": {"nome": "Ryzen 7 5700X3D", "plataforma": "AM4", "regex": "5700\\s*X3D",  "indice": 74,  "cooler_incluso": false, "fonte": "estimativa: ~4% abaixo do 5800X3D (clock menor)"},
+    "5800X3D": {"nome": "Ryzen 7 5800X3D", "plataforma": "AM4", "regex": "5800\\s*X3D",  "indice": 77,  "cooler_incluso": false, "fonte": "TechSpot: 23% abaixo do 9800X3D (RTX 5090, 1080p ultra)"},
+    "7600":    {"nome": "Ryzen 5 7600",    "plataforma": "AM5", "regex": "Ryzen\\s*5\\s*7600(?!\\s*X)", "indice": 71, "cooler_incluso": true,  "fonte": "estimativa: ~4% abaixo do 7600X (Tom's 69, TechSpot ~79 -> 74)"},
+    "7800X3D": {"nome": "Ryzen 7 7800X3D", "plataforma": "AM5", "regex": "7800\\s*X3D",  "indice": 90,  "cooler_incluso": false, "fonte": "Tom's: 88% do 9800X3D; TechSpot: 9800X3D 8-11% mais rápido"},
+    "9800X3D": {"nome": "Ryzen 7 9800X3D", "plataforma": "AM5", "regex": "9800\\s*X3D",  "indice": 100, "cooler_incluso": false, "fonte": "referência"}
+  },
+
+  "gpus": {
+    "RTX5060":     {"nome": "RTX 5060 8GB",      "regex": "RTX\\s*5060(?!\\s*Ti)",              "vram": 8,  "fonte_extra": 0,   "fps": {"1080p": 88.5,  "1440p": 59.8,  "4k": 21.8}},
+    "RTX5060TI16": {"nome": "RTX 5060 Ti 16GB",  "regex": "(?=.*RTX\\s*5060\\s*Ti)(?=.*16\\s*GB)", "vram": 16, "fonte_extra": 0,   "fps": {"1080p": 105.2, "1440p": 73.4,  "4k": 40.2}},
+    "RX9060XT16":  {"nome": "RX 9060 XT 16GB",   "regex": "(?=.*9060\\s*XT)(?=.*16\\s*GB)",       "vram": 16, "fonte_extra": 0,   "fps": {"1080p": 98.3,  "1440p": 67.3,  "4k": 35.2}},
+    "RTX5070":     {"nome": "RTX 5070 12GB",     "regex": "RTX\\s*5070(?!\\s*Ti)",              "vram": 12, "fonte_extra": 150, "fps": {"1080p": 132.6, "1440p": 96.4,  "4k": 54.3}},
+    "RX9070":      {"nome": "RX 9070 16GB",      "regex": "RX\\s*9070(?!\\s*XT)",               "vram": 16, "fonte_extra": 150, "fps": {"1080p": 140.9, "1440p": 104.0, "4k": 57.7}},
+    "RX9070XT":    {"nome": "RX 9070 XT 16GB",   "regex": "RX\\s*9070\\s*XT",                   "vram": 16, "fonte_extra": 150, "fps": {"1080p": 156.6, "1440p": 116.5, "4k": 65.8}},
+    "RTX5070TI":   {"nome": "RTX 5070 Ti 16GB",  "regex": "RTX\\s*5070\\s*Ti",                  "vram": 16, "fonte_extra": 150, "fps": {"1080p": 155.4, "1440p": 116.8, "4k": 68.6}}
+  },
+
+  "ram": {
+    "_nota": "A RAM não recebe nota: entra como requisito (32GB em dual channel). Vale o item mais barato em estoque de cada plataforma (categoria memoria + plataforma no watchlist)."
+  }
+}

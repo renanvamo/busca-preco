@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peças e preços</title>
+<style>
+  :root{--bg:#f6f7f9;--card:#fff;--ink:#16181d;--mut:#667085;--line:#e3e6ec;--acc:#2f6fed;--warn:#b54708;--bad:#b42318;--good:#067647;--sel:#eaf2ff}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--ink:#e8eaf0;--mut:#98a2b3;--line:#2a2f3a;--acc:#6b9bff;--warn:#fbbf24;--bad:#f87171;--good:#4ade80;--sel:#1a2540}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif;padding-bottom:170px}
+  header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  header h1{font-size:18px;margin:0 12px 0 0}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:8px}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+  button:disabled{opacity:.55;cursor:wait}
+  button.mini{padding:2px 7px;font-size:12px;border-radius:6px;color:var(--mut)}
+  button.mini:hover{color:var(--bad);border-color:var(--bad)}
+  .mut{color:var(--mut)} .small{font-size:13px}
+  main{max-width:1500px;margin:0 auto;padding:16px 20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+  h2{font-size:17px;margin:22px 0 8px} h2:first-child{margin-top:0}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+  .box h3{margin:0 0 6px;font-size:15px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:550;font-size:12px}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:color-mix(in srgb,var(--sel) 55%,transparent)}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+  th.sortable:hover{color:var(--ink)}
+  th.active{color:var(--ink);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+  td.active{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+  .tools{display:flex;gap:10px;align-items:center;margin:2px 0 8px}
+  .tools input{font:inherit;flex:1;min-width:140px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  tr.sel td{background:var(--sel)}
+  tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
+  a{color:var(--acc);text-decoration:none} a:hover{text-decoration:underline}
+  .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:99px;border:1px solid var(--line);color:var(--mut);margin-left:4px;white-space:nowrap}
+  .tag.warn{color:var(--warn);border-color:var(--warn)}
+  td.good{color:var(--good);font-weight:600}
+  td.f-1,td.f-2,td.f-3,td.f--1,td.f--2,td.f--3{font-weight:600}
+  td.f--1{background:color-mix(in srgb,var(--good) 11%,transparent)} td.f--2{background:color-mix(in srgb,var(--good) 22%,transparent)} td.f--3{background:color-mix(in srgb,var(--good) 36%,transparent)}
+  td.f-1{background:color-mix(in srgb,var(--bad) 10%,transparent)} td.f-2{background:color-mix(in srgb,var(--bad) 21%,transparent)} td.f-3{background:color-mix(in srgb,var(--bad) 34%,transparent)}
+  .legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin:0 1px;vertical-align:baseline}
+  .selo{display:inline-block;font-size:12px;font-weight:650;padding:1px 6px;border-radius:99px;white-space:nowrap;cursor:help}
+  .selo.queda{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+  .selo.alta{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+  header label{font-size:13px;color:var(--mut);display:flex;gap:6px;align-items:center}
+  header select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+  .err{background:var(--card);border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 14px;margin:10px 0}
+  pre{background:#0b0d12;color:#cbd5e1;padding:10px;border-radius:8px;max-height:260px;overflow:auto;font-size:12px;white-space:pre-wrap;margin:8px 0 0}
+  #bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--acc);padding:10px 20px;z-index:6}
+  #bar .row{max-width:1500px;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline}
+  #bar .total{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  #toast{position:fixed;right:20px;top:70px;z-index:9;max-width:380px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:10px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:none}
+  #toast.bad{border-left-color:var(--bad)}
+  #bar .warn{color:var(--warn);font-size:13px;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>Peças e preços</h1>
+  <button class="primary" id="btnRun">Atualizar preços agora</button>
+  <button id="btnLoad">Recarregar lista</button>
+  <button id="btnClear">Limpar seleção</button>
+  <label title="Janela usada para calcular Mín, Máx e as quedas">Histórico:
+    <select id="dias"><option value="7">7 dias</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="0">Tudo</option></select></label>
+  <span class="small mut" id="stamp"></span>
+</header>
+<main>
+  <div id="runbox" hidden><div class="small"><b id="runstate"></b></div><pre id="runlog"></pre></div>
+  <div id="msg"></div>
+  <div id="out"></div>
+  <p class="small mut" id="foot"></p>
+  <p class="small mut" id="legend"></p>
+</main>
+<div id="toast"></div>
+<div id="bar"><div class="row" id="barrow"></div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const MODO_ESTATICO = false;   // build_site.py troca por true na versão publicada (GitHub Pages)
+let staticData = null;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl = v => v == null ? '–' : 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '#';
+let data = null, poll = null, sel = {cpu:null, ram:null, gpu:null}, dias = '30';
+try{ sel = Object.assign(sel, JSON.parse(localStorage.getItem('sel') || '{}')); }catch(e){}
+try{ dias = localStorage.getItem('dias') || '30'; }catch(e){}
+const saveSel = () => { try{ localStorage.setItem('sel', JSON.stringify(sel)); }catch(e){} };
+
+async function api(path, body){
+  const opt = body === undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)};
+  const r = await fetch(path, opt);
+  const j = await r.json().catch(() => ({erro:'resposta inválida'}));
+  if(!r.ok) throw new Error(j.erro || r.status);
+  return j;
+}
+const showErr = e => { $('#msg').innerHTML = e ? `<div class="err">${esc(e)}</div>` : ''; };
+
+const flagBtns = k => MODO_ESTATICO ? '' : `<button class="mini" data-upd="${esc(k)}" title="Abre a página deste produto agora e atualiza o preço. Se estiver esgotado, sai da lista.">↻ atualizar</button>`;
+const nameCell = p => `<a href="${safeUrl(p.link)}" target="_blank" rel="noopener">${esc(p.nome.slice(0,85))}</a>${p.estoque_confirmado?'':'<span class="tag warn" title="a loja não informa estoque de forma clara">estoque ?</span>'}`;
+
+const nomeCol = {k:'nome', t:'Item / loja', first:'asc', get:p => p.modelo_nome + ' ' + p.loja};
+const precoCol = {k:'preco', t:'Preço', n:1, first:'asc', get:p => p.preco};
+const hist = p => p.hist || {};
+const histCols = [
+  {k:'min', t:'Mín', n:1, first:'asc', get:p => hist(p).min ?? null, tip:'Menor preço do período (só leituras com a peça em estoque)'},
+  {k:'max', t:'Máx', n:1, first:'desc', get:p => hist(p).max ?? null, tip:'Maior preço do período (só leituras com a peça em estoque)'},
+  {k:'var', t:'Var.', n:1, first:'asc', tip:'Queda (▼) ou alta (▲) recente; clique para ver as maiores quedas primeiro',
+   get:p => { const h = hist(p), s = h.selo; if(h.min == null) return null; return s ? (s.tipo === 'queda' ? -1 : 1) * Math.abs(s.pct) : 0; }}
+];
+const TABLES = {
+  cpu: {cols:[{...nomeCol, t:'Processador / loja'}, precoCol, ...histCols, {k:'nota', t:'Nota', n:1, first:'desc', get:p => p.indice, tip:'Desempenho em jogos, 9800X3D = 100'}], row:rowCpu},
+  ram: {cols:[{...nomeCol, get:p => p.loja + ' ' + p.nome}, precoCol, ...histCols], row:rowRam},
+  gpu: {cols:[{...nomeCol, t:'Placa / loja'}, precoCol, ...histCols,
+              {k:'f1080', t:'1080p', n:1, first:'desc', get:p => p.fps['1080p']},
+              {k:'f1440', t:'1440p', n:1, first:'desc', get:p => p.fps['1440p']},
+              {k:'f4k', t:'4K', n:1, first:'desc', get:p => p.fps['4k']},
+              {k:'vram', t:'VRAM', n:1, first:'desc', get:p => p.vram}], row:rowGpu}
+};
+function precoCell(p){
+  const f = hist(p).faixa || 0, h = hist(p);
+  const tip = f && h.min != null ? `Mín ${brl(h.min)} · Máx ${brl(h.max)}: ${f < 0 ? 'barato' : 'caro'} para o período (${Math.abs(f)}/3)` : '';
+  return `<td class="n f-${f}" title="${esc(tip)}">${brl(p.preco)}</td>`;
+}
+function histCells(p){
+  const h = hist(p), s = h.selo;
+  if(h.min == null) return '<td class="n mut" title="Ainda não há dois preços diferentes no período">–</td><td class="n mut">–</td><td class="n mut">–</td>';
+  const baixo = p.preco <= h.min + 0.005, pct = x => Math.abs(x).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%';
+  let v = '<span class="mut">–</span>';
+  if(s){
+    const quando = s.base === 'antes' ? 'preço anterior' : s.base === 'máx' ? 'máximo do período' : 'mínimo do período';
+    v = `<span class="selo ${s.tipo}" title="${s.tipo === 'queda' ? 'Era' : 'Estava em'} ${brl(s.ref)} (${quando})">${s.tipo === 'queda' ? '▼' : '▲'} ${pct(s.pct)}</span>`;
+  }
+  return `<td class="n${baixo ? ' good' : ''}" title="${baixo ? 'Está no menor preço do período' : ''}">${brl(h.min)}</td><td class="n">${brl(h.max)}</td><td class="n">${v}</td>`;
+}
+const view = {};   // id -> {sort, dir, q}
+const vw = id => view[id] || (view[id] = {sort:'preco', dir:'asc', q:''});
+
+function rowCpu(p){
+  return `<tr data-pick="cpu" data-key="${esc(p.key)}"><td><b>${esc(p.modelo_nome)}</b><span class="tag">${esc(p.loja)}</span><div class="small">${nameCell(p)}</div></td>
+    ${precoCell(p)}${histCells(p)}<td class="n">${p.indice}</td><td class="n">${flagBtns(p.key)}</td></tr>`;
+}
+function rowRam(p){
+  return `<tr data-pick="ram" data-key="${esc(p.key)}"><td><span class="tag" style="margin:0 6px 0 0">${esc(p.loja)}</span>${nameCell(p)}</td>
+    ${precoCell(p)}${histCells(p)}<td class="n">${flagBtns(p.key)}</td></tr>`;
+}
+function rowGpu(p){
+  return `<tr data-pick="gpu" data-key="${esc(p.key)}"><td><b>${esc(p.modelo_nome)}</b><span class="tag">${esc(p.loja)}</span><div class="small">${nameCell(p)}</div></td>
+    ${precoCell(p)}${histCells(p)}<td class="n">${p.fps['1080p']}</td><td class="n">${p.fps['1440p']}</td><td class="n">${p.fps['4k']}</td><td class="n">${p.vram} GB</td><td class="n">${flagBtns(p.key)}</td></tr>`;
+}
+
+function listFor(id){
+  const [t, plat] = id.split(':');
+  const src = t === 'cpu' ? data.cpus : t === 'ram' ? data.rams : data.gpus;
+  return plat ? src.filter(x => x.plataforma === plat) : src;
+}
+
+function sortedRows(id){
+  const [t] = id.split(':'), def = TABLES[t], v = vw(id);
+  const col = def.cols.find(c => c.k === v.sort) || precoCol;
+  const words = v.q.toLowerCase().split(/\s+/).filter(Boolean);
+  let rows = listFor(id).filter(p => {
+    const hay = (p.modelo_nome + ' ' + p.loja + ' ' + p.nome).toLowerCase();
+    return words.every(w => hay.includes(w));
+  });
+  const dir = v.dir === 'desc' ? -1 : 1;
+  rows.sort((a, b) => {
+    const x = col.get(a), y = col.get(b);
+    if((x == null) !== (y == null)) return x == null ? 1 : -1;     // sem histórico sempre no fim
+    let c = x == null ? 0 : typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y;
+    if(c) return c * dir;
+    return (a.preco - b.preco) || a.nome.localeCompare(b.nome, 'pt-BR');   // empate: menor valor primeiro
+  });
+  return rows;
+}
+
+function fillTable(id){
+  const [t] = id.split(':'), def = TABLES[t], v = vw(id);
+  const rows = sortedRows(id);
+  const ncol = def.cols.length + 1, ai = def.cols.findIndex(c => c.k === v.sort);
+  const body = $(`[data-body="${id}"]`);
+  body.innerHTML = rows.length ? rows.map(def.row).join('') : `<tr style="cursor:default"><td colspan="${ncol}" class="mut">${v.q ? 'nada encontrado para este filtro' : 'nenhuma em estoque no banco'}</td></tr>`;
+  if(rows.length) body.querySelectorAll('tr').forEach(tr => { const td = tr.children[ai]; if(td) td.classList.add('active'); });
+  $(`[data-head="${id}"]`).innerHTML = def.cols.map(c => {
+    const on = c.k === v.sort, arrow = on ? (v.dir === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th class="sortable${c.n ? ' n' : ''}${on ? ' active' : ''}" data-sort="${id}" data-col="${c.k}" title="${esc(c.tip || 'Clique para ordenar')}">${esc(c.t)}${arrow}</th>`;
+  }).join('') + '<th></th>';
+  mark();
+}
+
+function tableBox(id, title, hint){
+  return `<div class="box"><h3>${title} <span class="small mut">${hint || ''}</span></h3>
+    <div class="tools"><input type="search" placeholder="Filtrar (ex.: 7800, kabum, asus)…" data-q="${id}" value="${esc(vw(id).q)}"></div>
+    <table><thead><tr data-head="${id}"></tr></thead><tbody data-body="${id}"></tbody></table></div>`;
+}
+
+function render(){
+  const d = data; let h = '<div class="grid">';
+  for(const plat of ['AM4','AM5']){
+    h += `<div><h2>${plat}</h2>`
+      + tableBox('cpu:' + plat, 'Processadores', '(nota = desempenho em jogos, 9800X3D = 100)')
+      + tableBox('ram:' + plat, 'Memória 32GB ' + (plat === 'AM4' ? 'DDR4' : 'DDR5'), '(pente único de 16GB já vem com preço ×2)') + '</div>';
+  }
+  h += '</div><h2>Placas de vídeo</h2>' + tableBox('gpu', 'FPS médio em jogos, ultra', "(Tom's Hardware, 11 jogos)");
+  if(d.faltando.length) h += `<p class="small mut">Sem preço em estoque no banco: ${esc(d.faltando.join(', '))}.</p>`;
+  $('#out').innerHTML = h;
+  ['cpu:AM4','ram:AM4','cpu:AM5','ram:AM5','gpu'].forEach(fillTable);
+  $('#stamp').textContent = (MODO_ESTATICO ? 'Preços de ' : 'Lista de ') + new Date(d.gerado_em).toLocaleString('pt-BR');
+  $('#foot').textContent = 'Padrão: menor preço primeiro. Clique no título de uma coluna para ordenar (nas notas e FPS, do maior para o menor; empate = menor preço). Clique de novo para inverter. Clique numa linha para escolher a peça. Mín/Máx e o selo ▼/▲ usam o histórico do período escolhido no topo; um preço só conta se durou 2 leituras seguidas (leituras isoladas costumam ser erro da loja). "–" = ainda não há dois preços diferentes.';
+  $('#legend').innerHTML = 'Cor do preço, entre o mínimo e o máximo do período: <span class="legend"><i style="background:color-mix(in srgb,var(--good) 36%,transparent)"></i><i style="background:color-mix(in srgb,var(--good) 22%,transparent)"></i><i style="background:color-mix(in srgb,var(--good) 11%,transparent)"></i> mais barato · meio · <i style="background:color-mix(in srgb,var(--bad) 10%,transparent)"></i><i style="background:color-mix(in srgb,var(--bad) 21%,transparent)"></i><i style="background:color-mix(in srgb,var(--bad) 34%,transparent)"></i> mais caro</span> (sem cor se a variação for menor que 3%).';
+  total();
+}
+
+function mark(){
+  document.querySelectorAll('tr[data-pick]').forEach(tr => tr.classList.toggle('sel', sel[tr.dataset.pick] === tr.dataset.key));
+}
+
+// Mesma conta de build_setups.avaliar, feita no navegador (a página publicada não tem servidor)
+function avaliarLocal(){
+  const cfg = staticData.config, all = [...data.cpus, ...data.rams, ...data.gpus];
+  const by = Object.fromEntries(all.map(p => [p.key, p]));
+  const cpu = by[sel.cpu], ram = by[sel.ram], gpu = by[sel.gpu];
+  const itens = [cpu, ram, gpu].filter(Boolean), avisos = [];
+  [['processador','cpu',cpu],['memória','ram',ram],['placa de vídeo','gpu',gpu]].forEach(([n,k,x]) => {
+    if(sel[k] && !x) avisos.push(`o item escolhido (${n}) não está mais disponível no banco`);
+  });
+  if(cpu && ram && cpu.plataforma !== ram.plataforma) avisos.push(`memória ${ram.modelo_nome} não serve no processador ${cpu.plataforma}`);
+  const r2 = x => Math.round(x * 100) / 100;
+  const r = {total: r2(itens.reduce((s, i) => s + i.preco, 0)), itens, avisos, fps:null, nota_pct:null,
+             plataforma:null, outras:null, outras_total:0, completo:null, sem_cooler:false};
+  const plat = (cpu || ram || {}).plataforma;
+  if(plat && cfg.custos_fixos[plat] && (cpu || ram)){
+    const outras = Object.fromEntries(Object.entries(cfg.custos_fixos[plat]).filter(([k]) => k !== 'cooler'));
+    const soma = Object.values(outras).reduce((s, v) => s + v, 0);
+    Object.assign(r, {plataforma:plat, outras, outras_total:r2(soma), completo:r2(r.total + soma), sem_cooler:!!(cpu && !cpu.cooler_incluso)});
+  }
+  if(cpu && gpu){
+    const cap = cfg.cap_fps_base * cpu.indice / 100, p = cfg.expoente, fps = {}, nota = {};
+    for(const res of ['1080p','1440p','4k']){
+      fps[res] = Math.round(Math.pow(Math.pow(gpu.fps[res], -p) + Math.pow(cap, -p), -1 / p) * 10) / 10;
+      nota[res] = Math.round(1000 * fps[res] / cfg.fps_referencia[res]) / 10;
+    }
+    r.fps = fps; r.nota_pct = nota;
+  }
+  return r;
+}
+
+async function total(){
+  const q = new URLSearchParams(); for(const k of ['cpu','ram','gpu']) if(sel[k]) q.set(k, sel[k]);
+  let r;
+  try{ r = MODO_ESTATICO ? avaliarLocal() : await api('/api/soma?' + q.toString()); }catch(e){ showErr(e.message); return; }
+  // se uma peça escolhida sumiu da lista (esgotou/marcada), limpa a escolha
+  const have = new Set(r.itens.map(i => i.key));
+  let changed = false; for(const k of ['cpu','ram','gpu']) if(sel[k] && !have.has(sel[k])){ sel[k] = null; changed = true; }
+  if(changed){ saveSel(); mark(); }
+  const by = {cpu:null, ram:null, gpu:null}; for(const i of r.itens) by[i.tipo] = i;
+  const part = (lbl, p) => `<span class="small"><span class="mut">${lbl}:</span> ${p ? esc(p.modelo_nome) + ' <span class="mut">(' + esc(p.loja) + ')</span> ' + brl(p.preco) : '<span class="mut">escolha na lista</span>'}</span>`;
+  let h = part('Processador', by.cpu) + part('Memória', by.ram) + part('Placa', by.gpu);
+  h += `<span><span class="mut small">Peças escolhidas</span> <span class="total">${brl(r.total)}</span></span>`;
+  if(r.outras){
+    const det = Object.entries(r.outras).map(([k,v]) => `${k.replace('nvme_1tb','NVMe 1TB').replace('placa_mae','placa-mãe')} ${brl(v)}`).join(' · ');
+    h += `<span class="small" title="${esc(det)}"><span class="mut">+ outras peças estimadas (${r.plataforma}):</span> ${brl(r.outras_total)}</span>`;
+    h += `<span><span class="mut small">PC completo ≈</span> <span class="total">${brl(r.completo)}</span></span>`;
+    h += `<div class="small mut" style="width:100%">Estimativa inclui ${esc(det)}.${r.sem_cooler ? ' Este processador não vem com cooler: some um cooler à parte.' : ''}</div>`;
+  }
+  if(r.fps) h += `<span class="small"><span class="mut">FPS estimado:</span> 1080p <b>${r.fps['1080p']}</b> · 1440p <b>${r.fps['1440p']}</b> · 4K <b>${r.fps['4k']}</b></span>`;
+  if(r.avisos.length) h += `<div class="warn">⚠ ${r.avisos.map(esc).join(' · ')}</div>`;
+  $('#barrow').innerHTML = h;
+}
+
+async function load(){
+  showErr('');
+  try{
+    if(MODO_ESTATICO){
+      const r = await fetch('data.json?' + Date.now());
+      if(!r.ok) throw new Error('data.json não encontrado (HTTP ' + r.status + ')');
+      staticData = await r.json();
+      data = staticData.pecas[dias] || staticData.pecas['30'];
+    } else data = await api('/api/pecas?dias=' + encodeURIComponent(dias));
+    render();
+  }
+  catch(e){ $('#out').innerHTML=''; showErr(e.message); }
+}
+
+async function runNow(){
+  $('#btnRun').disabled = true; showErr('');
+  try{ await api('/api/run', {}); }catch(e){ showErr(e.message); $('#btnRun').disabled=false; return; }
+  $('#runbox').hidden = false; clearInterval(poll);
+  poll = setInterval(async () => {
+    try{
+      const s = await api('/api/run/status');
+      $('#runlog').textContent = s.log; $('#runlog').scrollTop = 1e9;
+      $('#runstate').textContent = s.rodando ? 'Buscando preços nas lojas… (pode levar alguns minutos)' : (s.codigo === 0 ? 'Busca concluída.' : 'Busca terminou com código ' + s.codigo + ' (veja o log).');
+      if(!s.rodando){ clearInterval(poll); $('#btnRun').disabled=false; load(); }
+    }catch(e){ clearInterval(poll); $('#btnRun').disabled=false; showErr(e.message); }
+  }, 2000);
+}
+
+let toastTimer = null;
+function toast(msg, bad){
+  const t = $('#toast'); t.textContent = msg; t.className = bad ? 'bad' : ''; t.style.display = 'block';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.style.display = 'none'; }, 7000);
+}
+document.addEventListener('input', ev => {
+  const i = ev.target.closest('[data-q]');
+  if(i){ vw(i.dataset.q).q = i.value; fillTable(i.dataset.q); }
+});
+document.addEventListener('click', async ev => {
+  const th = ev.target.closest('[data-sort]');
+  if(th){
+    const id = th.dataset.sort, v = vw(id), def = TABLES[id.split(':')[0]], col = def.cols.find(c => c.k === th.dataset.col);
+    if(v.sort === col.k) v.dir = v.dir === 'asc' ? 'desc' : 'asc';
+    else { v.sort = col.k; v.dir = col.first; }
+    fillTable(id); return;
+  }
+  const up = ev.target.closest('[data-upd]');
+  try{
+    if(up){
+      up.disabled = true; up.textContent = '…';
+      const r = await api('/api/atualizar', {key: up.dataset.upd});
+      toast(r.mensagem, r.resultado === 'erro');
+      await load(); return;
+    }
+    if(ev.target.closest('a')) return;
+    const tr = ev.target.closest('tr[data-pick]');
+    if(tr){
+      const t = tr.dataset.pick;
+      sel[t] = sel[t] === tr.dataset.key ? null : tr.dataset.key;   // clicar de novo desmarca
+      saveSel(); mark(); total();
+    }
+  }catch(e){ showErr(e.message); if(up) load(); }
+});
+$('#btnRun').onclick = runNow;
+if(MODO_ESTATICO) $('#btnRun').hidden = true;
+$('#btnLoad').onclick = load;
+$('#dias').value = dias;
+$('#dias').onchange = () => { dias = $('#dias').value; try{ localStorage.setItem('dias', dias); }catch(e){} load(); };
+$('#btnClear').onclick = () => { sel = {cpu:null, ram:null, gpu:null}; saveSel(); mark(); total(); };
+load();
+</script>
+</body>
+</html>

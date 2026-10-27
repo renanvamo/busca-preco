@@ -1,0 +1,15 @@
+# Segredos e arquivos locais: NUNCA suba estes
+.env
+*.env
+prices.db
+prices.db-*
+last_run.json
+watch.log
+debug/
+site/
+__pycache__/
+*.pyc
+# Páginas salvas de lojas (podem conter cookies, CEP e outros dados da sessão)
+*.html
+!index.html
+watchlist.anterior.json

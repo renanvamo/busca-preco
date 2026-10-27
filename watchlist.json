@@ -1,0 +1,323 @@
+{
+  "_nota": "Edite à vontade. JSON não aceita comentários; as barras das regex precisam ser duplas. 'categoria' agrupa as peças no banco e nos CSV (processador, memoria, placa_de_video; também aceita placa_mae e ssd) e 'plataforma' marca AM4/AM5. 'multiplicador': 2 multiplica o preço lido (ex.: pente único de 16GB; 2 pentes = 32GB em dual channel).",
+  "_onde_colocar_url_de_produto": "Em 'products': cada item é UMA página de produto. Para rastrear um produto específico, copie o link da loja, cole em \"url\" (entre aspas) e dê um nome. \"target\" é a meta de preço em reais (ou apague a linha / deixe null). As vagas com \"url\": \"\" são ignoradas até você colar o link. Parâmetros de rastreamento do link (srsltid, utm_*) são removidos sozinhos. Lojas usadas: KaBuM (busca e link) e Terabyte (só link de produto). Pichau e Mercado Livre bloqueiam o script e estão em disabled_stores.",
+  "defaults": {
+    "drop_pct": 8,
+    "dedup_hours": 24,
+    "max_alerts_per_run": 10,
+    "detail_price_max": 80,
+    "detail_per_search": 5,
+    "heartbeat": true
+  },
+  "disabled_stores": [
+    "pichau",
+    "mercadolivre"
+  ],
+  "stores": [
+    "kabum",
+    "mercadolivre"
+  ],
+  "products": [
+    {
+      "name": "Ryzen 7 5800X3D - Pichau",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "url": "https://www.pichau.com.br/processador-amd-ryzen-7-5800x3d-8-core-16-threads-3-4ghz-4-5ghz-turbo-cache-100mb-am4-100-100000651pof"
+    },
+    {
+      "name": "Ryzen 7 5800X3D Anniversary - Terabyte (sem cooler)",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "url": "https://www.terabyteshop.com.br/produto/42633/processador-amd-ryzen-7-5800x3d-anniversary-edition-34ghz-45ghz-turbo-8-cores-16-threads-am4-sem-cooler-sem-video"
+    },
+    {
+      "name": "Ryzen 5 7600 - Terabyte (com cooler Wraith Stealth)",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.terabyteshop.com.br/produto/23415/processador-amd-ryzen-5-7600-38ghz-51ghz-turbo-6-cores-12-threads-am5-com-cooler-amd-wraith-stealth-100-100001015box"
+    },
+    {
+      "name": "Ryzen 7 7800X3D - Pichau",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.pichau.com.br/processador-amd-ryzen-7-7800x3d-8-core-16-threads-4-2ghz-5-0ghzturbo-cache-104mb-am5-100-100000910wof"
+    },
+    {
+      "name": "Ryzen 7 9800X3D - Pichau",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.pichau.com.br/processador-amd-ryzen-7-9800x3d-8-core-16-threads-4-7ghz-5-2ghz-turbo-cache-104mb-am5-100-100001084wof"
+    },
+    {
+      "name": "RAM DDR5 32GB 6000 CL28 - Klevv Bolt V (KaBuM)",
+      "categoria": "memoria",
+      "plataforma": "AM5",
+      "url": "https://www.kabum.com.br/produto/999149/memoria-ddr5-32gb-6000mhz-klevv-bolt-v-2x16gb-cl28-kd5agua80-60b280h"
+    },
+    {
+      "name": "RAM DDR5 32GB 6000 CL30 - XPG Lancer (KaBuM)",
+      "categoria": "memoria",
+      "plataforma": "AM5",
+      "url": "https://www.kabum.com.br/produto/526516/memoria-ram-xpg-lancer-rgb-32gb-2x16gb-6000mhz-ddr5-cl30-preto-ax5u6000c3016g-dclarbk"
+    },
+    {
+      "name": "GPU RX 9060 XT 16GB - ASUS Dual (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/38270/placa-de-video-asus-amd-radeon-rx-9060-xt-dual-16gb-gddr6-fsr-ray-tracing-90yv0lg2-m0na00"
+    },
+    {
+      "name": "RX 9060 XT 16GB - ASRock Challenger OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/36467/placa-de-video-asrock-amd-radeon-rx-9060-xt-challenger-oc-16gb-gddr6-fsr-ray-tracing-90-ga5qzz-00uanf"
+    },
+    {
+      "name": "Ryzen 5 7600 - KaBuM",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.kabum.com.br/produto/405799/processador-amd-ryzen-5-7600-3-8ghz-5-1ghz-max-turbo-cache-38mb-6-nucleos-12-threads-am5-com-video-integrado-100-100001015box"
+    },
+    {
+      "name": "Ryzen 7 9800X3D - KaBuM",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.kabum.com.br/produto/662405/processador-amd-ryzen-7-9800x3d-4-7ghz-5-2ghz-max-turbo-cache-104mb-8-nucleos-16-threads-am5-com-video-integrado-100-100001084wof"
+    },
+    {
+      "name": "Ryzen 7 5700X3D - Terabyte (sem cooler)",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "url": "https://www.terabyteshop.com.br/produto/27329/processador-amd-ryzen-7-5700x3d-30ghz-41ghz-turbo-8-cores-16-threads-am4-sem-cooler-100-100001503wof"
+    },
+    {
+      "name": "Ryzen 7 7800X3D - Terabyte (sem cooler)",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.terabyteshop.com.br/produto/24769/processador-amd-ryzen-7-7800x3d-42ghz-50ghz-turbo-8-cores-16-threads-am5-sem-cooler-100-100000910wof"
+    },
+    {
+      "name": "Ryzen 7 9800X3D - Terabyte (sem cooler)",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "https://www.terabyteshop.com.br/produto/32518/processador-amd-ryzen-7-9800x3d-47ghz-52ghz-turbo-8-cores-16-threads-am5-sem-cooler-100-1000001084wof"
+    },
+    {
+      "name": "RAM DDR4 16GB 3200 Synex - Terabyte (x2 = 32GB)",
+      "categoria": "memoria",
+      "plataforma": "AM4",
+      "multiplicador": 2,
+      "url": "https://www.terabyteshop.com.br/produto/42526/memoria-ddr4-synex-16gb-3200mhz-preto"
+    },
+    {
+      "name": "RAM DDR4 16GB 3200 HikSemi Armor - Terabyte (x2 = 32GB)",
+      "categoria": "memoria",
+      "plataforma": "AM4",
+      "multiplicador": 2,
+      "url": "https://www.terabyteshop.com.br/produto/31368/memoria-ddr4-hiksemi-armor-white-16gb-3200mhz-branco"
+    },
+    {
+      "name": "RTX 5060 8GB - Palit White OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/43018/placa-de-video-palit-nvidia-geforce-rtx-5060-white-oc-8gb-gddr7-dlss-ray-tracing-ne75060u19p1-gb2063m"
+    },
+    {
+      "name": "RTX 5060 8GB - PCYes Dual (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/43432/placa-de-video-pcyes-nvidia-geforce-rtx-5060-8gb-gddr7-128bits-dual-fan-pvrtx5060b2f128"
+    },
+    {
+      "name": "RTX 5060 Ti 16GB - PCYes (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/42841/placa-de-video-pcyes-nvidia-geforce-rtx-5060-ti-16gb-gddr7-dlss-ray-tracing-pvrtx5060tib2f16g"
+    },
+    {
+      "name": "RTX 5060 Ti 16GB - ASUS Dual OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/35794/placa-de-video-asus-dual-nvidia-geforce-rtx-5060-ti-oc-16gb-gddr7-dlss-ray-tracing-dual-rtx5060ti-o16g"
+    },
+    {
+      "name": "RX 9060 XT 16GB - ASUS Prime OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/36459/placa-de-video-asus-amd-radeon-rx-9060-xt-prime-oc-16gb-gddr6-fsr-ray-tracing-90yv0lf1-m0na00"
+    },
+    {
+      "name": "RTX 5070 12GB - ASUS ATS OC V2 (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/43330/placa-de-video-asus-nvidia-geforce-rtx-5070-ats-oc-v2-12gb-gddr7-dlss-ray-tracing-ats-rtx5070-o12g-v2"
+    },
+    {
+      "name": "RTX 5070 Ti 16GB - Zotac Solid Core OC White (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/43484/placa-de-video-zotac-gaming-nvidia-geforce-rtx-5070-ti-solid-core-oc-white-16gb-gddr7-dlss-ray-tracing-zt-b50710q2-10p"
+    },
+    {
+      "name": "RX 9070 16GB - Gigabyte Gaming OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/34704/placa-de-video-gigabyte-amd-radeon-rx-9070-gaming-oc-16gb-gddr6-fsr-ray-tracing-gv-r9070gaming-oc-16gd"
+    },
+    {
+      "name": "RX 9070 XT 16GB - ASUS Prime OC (Terabyte)",
+      "categoria": "placa_de_video",
+      "url": "https://www.terabyteshop.com.br/produto/34851/placa-de-video-asus-prime-amd-radeon-rx-9070-xt-oc-edition-16gb-gddr6-fsr-ray-tracing-prime-rx9070xt-o16g"
+    },
+    {
+      "name": "COLE AQUI O NOME (ex.: Ryzen 7 5700X3D - KaBuM)",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "url": "",
+      "target": null
+    },
+    {
+      "name": "COLE AQUI O NOME (ex.: Ryzen 7 5700X3D - KaBuM)",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "url": "",
+      "target": null
+    },
+    {
+      "name": "COLE AQUI O NOME (ex.: Ryzen 7 5700X3D - KaBuM)",
+      "categoria": "memoria",
+      "plataforma": "AM4",
+      "url": "",
+      "target": null
+    },
+    {
+      "name": "COLE AQUI O NOME (ex.: Ryzen 7 5700X3D - KaBuM)",
+      "categoria": "memoria",
+      "plataforma": "AM5",
+      "url": "",
+      "target": null
+    },
+    {
+      "name": "COLE AQUI O NOME (ex.: Ryzen 7 5700X3D - KaBuM)",
+      "categoria": "placa_de_video",
+      "url": "",
+      "target": null
+    }
+  ],
+  "searches": [
+    {
+      "name": "CPU AM4 - Ryzen 5 5600",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "query": "ryzen 5 5600",
+      "include": "\\b5600\\b",
+      "exclude": "5600\\s*(X|G|GT|XT)\\b|kit|placa|computador|pc gamer|notebook|cooler|water\\s*cooler"
+    },
+    {
+      "name": "CPU AM4 - Ryzen 7 5700X3D",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "query": "ryzen 7 5700x3d",
+      "include": "5700\\s*X3D",
+      "exclude": "kit|placa|computador|pc gamer|notebook|cooler|water\\s*cooler"
+    },
+    {
+      "name": "CPU AM4 - Ryzen 7 5800X3D",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "query": "ryzen 7 5800x3d",
+      "include": "5800\\s*X3D",
+      "exclude": "kit|placa|computador|pc gamer|notebook|cooler|water\\s*cooler"
+    },
+    {
+      "name": "CPU AM4 - Ryzen 7 5800XT",
+      "categoria": "processador",
+      "plataforma": "AM4",
+      "query": "ryzen 7 5800xt",
+      "include": "5800\\s*XT",
+      "exclude": "kit|placa|computador|pc gamer|notebook|cooler|water\\s*cooler"
+    },
+    {
+      "name": "CPU AM5 - Ryzen 7 7800X3D",
+      "categoria": "processador",
+      "plataforma": "AM5",
+      "query": "ryzen 7 7800x3d",
+      "include": "7800\\s*X3D",
+      "exclude": "kit|placa|computador|pc gamer|notebook|cooler|water\\s*cooler"
+    },
+    {
+      "name": "RAM DDR4 32GB 3200+",
+      "categoria": "memoria",
+      "plataforma": "AM4",
+      "query": "memoria ddr4 32gb 3200",
+      "include": "(?=.*DDR4)(?=.*32\\s*GB)(?=.*(3200|3600))",
+      "exclude": "sodimm|so-dimm|notebook|laptop|servidor|ecc|rdimm|dell|lenovo|\\bhp\\b|\\bkit\\s+upgrade|2666|2400"
+    },
+    {
+      "name": "RAM DDR5 32GB 6000+",
+      "categoria": "memoria",
+      "plataforma": "AM5",
+      "query": "memoria ddr5 32gb 6000",
+      "include": "(?=.*DDR5)(?=.*32\\s*GB)(?=.*(6000|6400))",
+      "exclude": "sodimm|so-dimm|notebook|laptop|servidor|ecc|rdimm|dell|lenovo|\\bhp\\b|\\bkit\\s+upgrade|4800|5200|5600"
+    },
+    {
+      "name": "GPU RTX 5060",
+      "categoria": "placa_de_video",
+      "query": "rtx 5060 8gb",
+      "include": "RTX\\s*5060\\b",
+      "exclude": "5060\\s*Ti|\\bTi\\b|notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "GPU RTX 5060 Ti 16GB",
+      "categoria": "placa_de_video",
+      "query": "rtx 5060 ti 16gb",
+      "include": "(?=.*5060\\s*Ti)(?=.*16\\s*GB)",
+      "exclude": "\\b8\\s*GB|notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "GPU RX 9060 XT 16GB",
+      "categoria": "placa_de_video",
+      "query": "rx 9060 xt 16gb",
+      "include": "(?=.*9060\\s*XT)(?=.*16\\s*GB)",
+      "exclude": "\\b8\\s*GB|notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "RAM DDR4 16GB 3200+ (pente único, preço ×2)",
+      "categoria": "memoria",
+      "plataforma": "AM4",
+      "query": "memoria ddr4 16gb 3200",
+      "multiplicador": 2,
+      "include": "(?=.*DDR4)(?=.*\\b16\\s*GB)(?=.*(3200|3600))",
+      "exclude": "sodimm|so-dimm|notebook|laptop|servidor|ecc|rdimm|dell|lenovo|\\bhp\\b|\\bkit\\s+upgrade|2\\s*x\\s*\\d|\\(\\s*2|32\\s*GB|\\bkit\\b|2666|2400|\\bnote\\b|predator|helios|\\bacer\\b|\\bph3\\d+|\\bsgm"
+    },
+    {
+      "name": "RAM DDR5 16GB 6000+ (pente único, preço ×2)",
+      "categoria": "memoria",
+      "plataforma": "AM5",
+      "query": "memoria ddr5 16gb 6000",
+      "multiplicador": 2,
+      "include": "(?=.*DDR5)(?=.*\\b16\\s*GB)(?=.*(6000|6400))",
+      "exclude": "sodimm|so-dimm|notebook|laptop|servidor|ecc|rdimm|dell|lenovo|\\bhp\\b|\\bkit\\s+upgrade|2\\s*x\\s*\\d|\\(\\s*2|32\\s*GB|\\bkit\\b|4800|5200|5600|\\bnote\\b|predator|helios|\\bacer\\b|\\bph3\\d+|\\bsgm"
+    },
+    {
+      "name": "GPU RTX 5070 12GB",
+      "categoria": "placa_de_video",
+      "query": "rtx 5070 12gb",
+      "include": "(?=.*RTX\\s*5070\\b)",
+      "exclude": "5070\\s*Ti|\\bTi\\b|notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "GPU RTX 5070 Ti 16GB",
+      "categoria": "placa_de_video",
+      "query": "rtx 5070 ti 16gb",
+      "include": "(?=.*5070\\s*Ti)(?=.*16\\s*GB)",
+      "exclude": "notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "GPU RX 9070 XT 16GB",
+      "categoria": "placa_de_video",
+      "query": "rx 9070 xt 16gb",
+      "include": "(?=.*9070\\s*XT)(?=.*16\\s*GB)",
+      "exclude": "notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    },
+    {
+      "name": "GPU RX 9070 16GB",
+      "categoria": "placa_de_video",
+      "query": "rx 9070 16gb",
+      "include": "(?=.*RX\\s*9070\\b)(?!.*9070\\s*XT)(?=.*16\\s*GB)",
+      "exclude": "notebook|laptop|pc gamer|computador|\\bkit\\b|desktop|processador|monitor|placa.m[ãa]e"
+    }
+  ],
+  "search_urls": {}
+}
